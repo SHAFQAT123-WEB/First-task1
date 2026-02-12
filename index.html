@@ -1,0 +1,108 @@
+
+using Microsoft.Data.SqlClient;
+using System;
+
+namespace HRConsoleApp
+{
+    class Program
+    {
+        static string connectionString = "Data Source=.;Initial Catalog=HRMS;Integrated Security=True";
+
+        static void Main(string[] args)
+        {
+            while (true)
+            {
+                Console.WriteLine("==== HR Management System ====");
+                Console.WriteLine("1. Add Employee");
+                Console.WriteLine("2. View Employees");
+                Console.WriteLine("3. Exit");
+                Console.Write("Select Option: ");
+
+                int choice = int.Parse(Console.ReadLine());
+
+                switch (choice)
+                {
+                    case 1:
+                        AddEmployee();
+                        break;
+                    case 2:
+                        ViewEmployees();
+                        break;
+                    case 3:
+                        return;
+                    default:
+                        Console.WriteLine("Invalid Option");
+                        break;
+                }
+
+                Console.WriteLine();
+            }
+        }
+
+        static void AddEmployee()
+        {
+            Console.Write("Full Name: ");
+            string name = Console.ReadLine();
+
+            Console.Write("Email: ");
+            string email = Console.ReadLine();
+
+            Console.Write("Phone: ");
+            string phone = Console.ReadLine();
+
+            Console.Write("Department: ");
+            string dept = Console.ReadLine();
+
+            Console.Write("Salary: ");
+            decimal salary = decimal.Parse(Console.ReadLine());
+
+            Console.Write("Joining Date (yyyy-mm-dd): ");
+            DateTime joiningDate = DateTime.Parse(Console.ReadLine());
+
+            using (SqlConnection con = new SqlConnection(connectionString))
+            {
+                string query = "INSERT INTO Employees (FullName, Email, Phone, Department, Salary, JoiningDate) VALUES (@name, @email, @phone, @dept, @salary, @date)";
+
+                SqlCommand cmd = new SqlCommand(query, con);
+
+                cmd.Parameters.AddWithValue("@name", name);
+                cmd.Parameters.AddWithValue("@email", email);
+                cmd.Parameters.AddWithValue("@phone", phone);
+                cmd.Parameters.AddWithValue("@dept", dept);
+                cmd.Parameters.AddWithValue("@salary", salary);
+                cmd.Parameters.AddWithValue("@date", joiningDate);
+
+                con.Open();
+                cmd.ExecuteNonQuery();
+                con.Close();
+
+                Console.WriteLine("Employee Added Successfully");
+            }
+        }
+
+        static void ViewEmployees()
+        {
+            using (SqlConnection con = new SqlConnection(connectionString))
+            {
+                string query = "SELECT * FROM Employees";
+                SqlCommand cmd = new SqlCommand(query, con);
+
+                con.Open();
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    Console.WriteLine("---------------------------------");
+                    Console.WriteLine("ID: " + reader["EmployeeID"]);
+                    Console.WriteLine("Name: " + reader["FullName"]);
+                    Console.WriteLine("Email: " + reader["Email"]);
+                    Console.WriteLine("Department: " + reader["Department"]);
+                    Console.WriteLine("Salary: " + reader["Salary"]);
+                }
+
+                con.Close();
+            }
+        }
+    }
+}
+
